@@ -30,6 +30,18 @@ get_context_interfaces() {
 }
 
 gen_header() {
+	if [[ -n $GATEWAY ]]
+    cat <<EOT
+*nat
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o eth$GATEWAY_IFACE_NUM -j MASQUERADE
+COMMIT
+EOT	
+	fi
+	
     cat <<EOT
 *filter
 :INPUT ACCEPT [0:0]
