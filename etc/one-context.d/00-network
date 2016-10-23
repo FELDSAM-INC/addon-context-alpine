@@ -226,7 +226,7 @@ activate_network()
         service networking start
     fi
 
-	if [[ -z $IP && -n $GATEWAY ]]
+	if [[ -z $IP && -n $GATEWAY ]]; then
 		ip route add default via $GATEWAY dev "eth$GATEWAY_IFACE_NUM"
 	fi
 

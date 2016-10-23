@@ -130,9 +130,7 @@ EOT
   virtual_router_id $vrouter_keepalived_id
 EOT
 		else
-			cat <<EOT
-  virtual_router_id $(get_vrouter_id)
-EOT		
+			echo "  virtual_router_id $(get_vrouter_id)"
 		fi
 		
 		if [ -n $vrouter_keepalived_password ]; then
@@ -141,7 +139,7 @@ authentication {
     auth_type PASS
     auth_pass $vrouter_keepalived_password
   }
-EOT	
+EOT
 		else
 			echo $(gen_auth)
 		fi
