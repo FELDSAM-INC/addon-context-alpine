@@ -102,7 +102,7 @@ gen_instances() {
         vrouter_keepalived_inf=$(get_iface_var $interface VROUTER_KEEPALIVED_INF)
         interface_downcase=$(echo $interface | downcase)
 
-        if [ $vrouter_ip -ne '' ]; then
+        if [ -n $vrouter_ip ]; then
             cat <<EOT
 vrrp_instance VI_$interface {
   state master
