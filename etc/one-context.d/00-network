@@ -22,20 +22,6 @@ if [ -z "$ACTION" ]; then
     ACTION="none"
 fi
 
-# Gets IP address from a given MAC
-mac2ip() {
-    mac=$1
-
-    let ip_a=0x`echo $mac | cut -d: -f 3`
-    let ip_b=0x`echo $mac | cut -d: -f 4`
-    let ip_c=0x`echo $mac | cut -d: -f 5`
-    let ip_d=0x`echo $mac | cut -d: -f 6`
-
-    ip="$ip_a.$ip_b.$ip_c.$ip_d"
-
-    echo $ip
-}
-
 # Gets the network part of an IP
 get_network() {
     network=$(get_iface_var "NETWORK")
@@ -90,10 +76,6 @@ get_gateway6() {
 get_ip() {
     ip=$(get_iface_var "IP")
 
-    if [ -z "$ip" ]; then
-        ip=$(mac2ip $MAC)
-    fi
-
     echo $ip
 }
 
@@ -105,19 +87,27 @@ get_iface_var() {
 }
 
 gen_iface_conf() {
-    cat <<EOT
+	
+	if [ -n "$IP" ]; then
+    	cat <<EOT
 iface $DEV inet static
   address $IP
   network $NETWORK
   netmask $MASK
 EOT
-
+		if [ -n "$GATEWAY" ]; then
+	        echo "  gateway $GATEWAY"
+	    fi
+	else
+    	cat <<EOT
+iface $DEV inet manual
+  pre-up ifconfig $DEV up
+  post-down ifconfig $DEV down
+EOT
+    fi
+	
     if [ -n "$MTU" ]; then
         echo "  mtu $MTU"
-    fi
-
-    if [ -n "$GATEWAY" ]; then
-        echo "  gateway $GATEWAY"
     fi
 
     echo ""
@@ -235,6 +225,10 @@ activate_network()
         sleep 1
         service networking start
     fi
+
+	if [[ -z $IP && -n $GATEWAY ]]
+		ip route add default via $GATEWAY dev "eth$GATEWAY_IFACE_NUM"
+	fi
 
     sleep 2
 }
