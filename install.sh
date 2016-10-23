@@ -37,18 +37,6 @@ deploy_files()
 }
 
 
-vrouter_or_not()
-{
-# if VROUTER is set to no the ONE virtual router parts are skipped.
-  if [ "x${VROUTER}" = "xno" ]; then 
-    # delete vrouter files
-    rm /etc/one-context.d/02-keepalived /etc/sysctl.d/01-one.conf
-    else
-    vrouter_addons
-  fi
-}
-
-
 cleanup()
 {
   echo '' > /etc/resolv.conf
@@ -64,7 +52,6 @@ main()
   vm_tools
   deploy_files
   vm_services
-  vrouter_or_not
 }
 
 main
