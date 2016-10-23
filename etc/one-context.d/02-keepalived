@@ -106,23 +106,17 @@ gen_instances() {
             cat <<EOT
 vrrp_instance VI_$interface {
   state master
-  interface $interface_downcase
   priority 101
   advert_int 1
+  virtual_ipaddress {
+    $vrouter_ip dev $interface_downcase	
+  }
 EOT
 		
 		if [ $vrouter_keepalived_inf != "" ]; then
-			cat <<EOT
-  virtual_ipaddress {
-    $vrouter_ip dev $vrouter_keepalived_inf	
-  }
-EOT
+			echo "  interface $vrouter_keepalived_inf";
 		else
-			cat <<EOT
-  virtual_ipaddress {
-    $vrouter_ip			
-  }
-EOT
+			echo "  interface $interface_downcase";
 		fi
 		
 		if [ $vrouter_keepalived_id != "" ]; then
