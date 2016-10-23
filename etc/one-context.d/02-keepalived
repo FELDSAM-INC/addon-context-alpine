@@ -102,7 +102,7 @@ gen_instances() {
         vrouter_keepalived_inf=$(get_iface_var $interface VROUTER_KEEPALIVED_INF)
         interface_downcase=$(echo $interface | downcase)
 
-        if [ -n $vrouter_ip ]; then
+        if [ $vrouter_ip != "" ]; then
             cat <<EOT
 vrrp_instance VI_$interface {
   state master
@@ -111,7 +111,7 @@ vrrp_instance VI_$interface {
   advert_int 1
 EOT
 		
-		if [ $vrouter_keepalived_inf -ne '' ]; then
+		if [ $vrouter_keepalived_inf != "" ]; then
 			cat <<EOT
   virtual_ipaddress {
     $vrouter_ip dev $vrouter_keepalived_inf	
@@ -125,7 +125,7 @@ EOT
 EOT
 		fi
 		
-		if [ $vrouter_keepalived_id -ne '' ]; then
+		if [ $vrouter_keepalived_id != "" ]; then
 			cat <<EOT
   virtual_router_id $vrouter_keepalived_id
 EOT
@@ -133,7 +133,7 @@ EOT
 			echo "  virtual_router_id $(get_vrouter_id)"
 		fi
 		
-		if [ $vrouter_keepalived_password -ne '' ]; then
+		if [ $vrouter_keepalived_password != "" ]; then
         	cat <<EOT
   authentication {
     auth_type PASS
