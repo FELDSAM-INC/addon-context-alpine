@@ -1,3 +1,3 @@
 #!/bin/sh
 
-php -q php/01-firewall.php
+php -q /etc/one-context.d/php/01-firewall.php
