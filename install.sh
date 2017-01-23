@@ -3,17 +3,18 @@
 
 vrouter_addons()
 {
-  apk add quagga
+  apk add keepalived
   rc-update add keepalived boot
 }
 
 
 vm_tools()
 {
+  apk add php-cli
+  apk add nano
   apk add rsync
   apk add udev
   apk add iptables
-  apk add keepalived
   apk add open-vm-tools
   apk add sfdisk
   apk add e2fsprogs-extra
