@@ -90,7 +90,7 @@ function get_nat_rules()
 
 	$rules .= 'COMMIT'."\n";
 
-	echo $rules;
+	return $rules;
 }
 
 function service_reload()
