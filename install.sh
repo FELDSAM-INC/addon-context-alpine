@@ -44,6 +44,11 @@ deploy_files()
 cleanup()
 {
   echo '' > /etc/resolv.conf
+  echo '' > /etc/iptables/rules-save
+  echo '' > /etc/iptables/rules6-save
+  echo 'auto lo' > /etc/network/interfaces
+  echo 'iface lo inet loopback' >> /etc/network/interfaces
+  rm -rf /tmp/*
   apk cache clean
 }
 
