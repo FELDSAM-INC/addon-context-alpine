@@ -79,7 +79,7 @@ function generate_instances()
 		if($if['VROUTER_IP'] || $if['VROUTER_IP6'])
 		{
 			$conf .= 'vrrp_instance VI_'.$if['DEV'].' {
-  state master
+  state MASTER
   priority 100
   advert_int 1
   nopreempt'."\n";
@@ -139,11 +139,6 @@ function service_reload()
 	exec('service keepalived reload');
 }
 
-function service_restart()
-{
-	exec('service keepalived restart');
-}
-
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 
 // generate only if is VROUTER instance
@@ -154,6 +149,5 @@ if(isset($_SERVER['VROUTER_ID']))
 	
 	exec('echo "'.$conf.'" > /etc/keepalived/keepalived.conf');
 	
-	if($action == 'none') service_restart();
 	if($action == 'reload') service_reload();
 }
