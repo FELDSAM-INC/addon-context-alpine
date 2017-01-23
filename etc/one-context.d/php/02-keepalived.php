@@ -89,6 +89,10 @@ function generate_instances()
   			{	
   				$conf .= '  interface '.$if['VROUTER_KEEPALIVED_INF']."\n";
   			}
+  			else
+  			{
+	  			$conf .= '  interface '.$if['DEV']."\n";
+  			}
   			
   			// Router ID
   			if($vrouter_id)
@@ -105,25 +109,25 @@ function generate_instances()
     auth_pass '.$_SERVER['VROUTER_KEEPALIVED_PASSWORD'].'
   }'."\n";
   			}
-		
-  			// Virtaul addresses
-  			$conf .= '  virtual_ipaddress {'."\n";
   			
   			// IPv4
   			if($if['VROUTER_IP'])
   			{
+	  			$conf .= '  virtual_ipaddress {'."\n";
 	  			$conf .= '    '.$if['VROUTER_IP'].'/'.get_mask_bits($if).' dev '.$if['DEV']."\n";
+	  			$conf .= '  }'."\n";
   			}
   			
   			// IPv6
+  			// Only works with conjunction with IPv4, VRRP Sync is over IPv4
   			if($if['VROUTER_IP6'])
   			{
+	  			$conf .= '  virtual_ipaddress_excluded {'."\n";
 	  			$conf .= '    '.$if['VROUTER_IP6'].'/64 dev '.$if['DEV']."\n";
+	  			$conf .= '  }'."\n";
   			}
 			
-			$conf .= '  }
-}
-';
+			$conf .= '}'."\n";
 		}
 	}
 	
