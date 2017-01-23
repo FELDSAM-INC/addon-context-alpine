@@ -82,7 +82,7 @@ function get_nat_rules()
 
 	foreach($interfaces as $interface)
 	{
-		if($interface['VROUTER_GATEWAY'] == 'YES')
+		if(isset($interface['VROUTER_GATEWAY']) && $interface['VROUTER_GATEWAY'] == 'YES')
 		{
 			$rules .= '-A POSTROUTING -o '.$interface['DEV'].' -j MASQUERADE'."\n";
 		}	
