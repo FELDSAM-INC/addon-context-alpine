@@ -96,6 +96,13 @@ function get_nat_rules()
 function service_reload()
 {
 	exec('service iptables reload');
+	exec('service ip6tables reload');
+}
+
+function service_restart()
+{
+	exec('service iptables restart');
+	exec('service ip6tables restart');
 }
 
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
@@ -109,5 +116,6 @@ if(isset($_SERVER['VROUTER_ID']))
 	exec('echo "'.$rules.'" > /etc/iptables/rules-save');
 	exec('echo "'.$rules.'" > /etc/iptables/rules6-save');
 	
+	if($action == 'none') service_restart();
 	if($action == 'reload') service_reload();
 }

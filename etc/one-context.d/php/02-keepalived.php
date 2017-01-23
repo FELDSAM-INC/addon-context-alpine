@@ -139,6 +139,11 @@ function service_reload()
 	exec('service keepalived reload');
 }
 
+function service_restart()
+{
+	exec('service keepalived restart');
+}
+
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 
 // generate only if is VROUTER instance
@@ -149,5 +154,6 @@ if(isset($_SERVER['VROUTER_ID']))
 	
 	exec('echo "'.$conf.'" > /etc/keepalived/keepalived.conf');
 	
+	if($action == 'none') service_restart();
 	if($action == 'reload') service_reload();
 }
