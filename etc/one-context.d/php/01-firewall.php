@@ -101,12 +101,13 @@ function service_reload()
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 
 // generate only if is VROUTER instance
-if(isset($_SERVER['ETH0_VROUTER_IP']))
+if(isset($_SERVER['VROUTER_ID']))
 {
 	$rules = get_filter_rules();
 	$rules .= get_nat_rules();
 	
 	exec('echo "'.$rules.'" > /etc/iptables/rules-save');
+	exec('echo "'.$rules.'" > /etc/iptables/rules6-save');
 	
 	if($action == 'reload') service_reload();
 }

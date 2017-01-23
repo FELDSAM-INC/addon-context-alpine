@@ -15,6 +15,7 @@ vm_tools()
   apk add rsync
   apk add udev
   apk add iptables
+  apk add ip6tables
   apk add open-vm-tools
   apk add sfdisk
   apk add e2fsprogs-extra
@@ -26,6 +27,7 @@ vm_services()
 {
   rc-update add udev boot
   rc-update add iptables boot
+  rc-update add ip6tables boot
   rc-update add open-vm-tools boot
   rc-update add acpid boot
   rc-update add one-context boot
