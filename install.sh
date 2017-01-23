@@ -43,6 +43,8 @@ deploy_files()
 
 cleanup()
 {
+  service iptables stop
+  service ip6tables stop
   echo '' > /etc/resolv.conf
   echo '' > /etc/iptables/rules-save
   echo '' > /etc/iptables/rules6-save
@@ -62,6 +64,8 @@ main()
   vrouter_addons
   deploy_files
   vm_services
+  
+  cleanup
 }
 
 main
