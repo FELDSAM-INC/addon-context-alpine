@@ -10,7 +10,7 @@ vrouter_addons()
 
 vm_tools()
 {
-  apk add php-cli
+  apk add php5-cli
   apk add nano
   apk add rsync
   apk add udev
@@ -52,6 +52,7 @@ main()
   apk update
   
   vm_tools
+  vrouter_addons
   deploy_files
   vm_services
 }
