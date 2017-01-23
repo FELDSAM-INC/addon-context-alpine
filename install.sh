@@ -25,7 +25,8 @@ vm_tools()
 
 vm_services()
 {
-  rc-update add udev boot
+  rc-update add udev sysinit
+  rc-update add udev-postmount default
   rc-update add iptables boot
   rc-update add ip6tables boot
   rc-update add open-vm-tools boot
