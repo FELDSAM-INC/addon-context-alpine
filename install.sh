@@ -5,6 +5,9 @@ vrouter_addons()
 {
   apk add keepalived
   rc-update add keepalived boot
+  apk add postfix
+  rc-update add postfix boot
+  sed -i 's/#inet_interfaces = all/inet_interfaces = localhost/' /etc/postfix/main.cf
 }
 
 

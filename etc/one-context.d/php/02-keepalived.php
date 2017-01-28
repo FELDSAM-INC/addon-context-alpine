@@ -66,6 +66,41 @@ function generate_groups()
 	return $conf;
 }
 
+function  generate_globals()
+{
+	if(empty($_SERVER['VROUTER_KEEPALIVED_NOTIFY_EMAIL'])) return;
+	
+	$conf = 'global_defs {
+  notification_email {
+';
+	
+	$emails = explode(' ', $_SERVER['VROUTER_KEEPALIVED_NOTIFY_EMAIL']);
+	
+	foreach($emails as $email)
+	{
+		$conf .= '    '.$email."\n";
+	}
+	
+	$conf .= '  }'."\n";
+	
+	if( ! empty($_SERVER['VROUTER_KEEPALIVED_EMAIL_FROM']))
+	{
+		$conf .= '  notification_email_from '.$_SERVER['VROUTER_KEEPALIVED_EMAIL_FROM']."\n";
+	}
+	else
+	{
+		$conf .= '  notification_email_from '.$_SERVER['VROUTER_KEEPALIVED_NOTIFY_EMAIL']."\n";
+	}
+	
+	$conf .= '  smtp_server 127.0.0.1
+  smtp_connect_timeout 30
+  router_id '.$_SERVER['VROUTER_ID'].'
+}
+';
+	
+	return $conf;
+}
+
 function generate_instances()
 {
 	$conf = '';
@@ -83,6 +118,12 @@ function generate_instances()
   priority 100
   advert_int 1
   nopreempt'."\n";
+
+  			// Alerts
+  			if( ! empty($_SERVER['VROUTER_KEEPALIVED_NOTIFY_EMAIL']))
+  			{
+	  			$conf .= '  smtp_alert'."\n";
+  			}
 
   			// Sync Interface
   			if(isset($if['VROUTER_KEEPALIVED_INF']) && $if['VROUTER_KEEPALIVED_INF'])
@@ -144,9 +185,10 @@ $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 // generate only if is VROUTER instance
 if(isset($_SERVER['VROUTER_ID']))
 {
-	$conf = generate_groups();
+	$conf = generate_globals();
+	$conf .= generate_groups();
 	$conf .= generate_instances();
-	
+
 	exec('echo "'.$conf.'" > /etc/keepalived/keepalived.conf');
 	
 	if($action == 'reload') service_reload();
