@@ -35,6 +35,53 @@ function get_context_interfaces()
     return $interfaces;
 }
 
+function get_context_virtual_servers()
+{
+	$servers = array();
+	
+	foreach($_SERVER as $key => $val)
+    {
+        if(preg_match('/^(VROUTER_LB[0-9])_(.+)$/', $key, $matches))
+        {   
+	        if(preg_match('/^SERVER([0-9])_(.+)$/', $matches[2], $matches_server))
+	        {
+		        if(preg_match('/^CHECK([0-9])_(.+)$/', $matches_server[2], $matches_server_check))
+		        {
+			        $servers[$matches[1]]['SERVERS'][$matches_server[1]]['CHECKS'][$matches_server_check[1]][$matches_server_check[2]] = trim($val);
+			    }
+			    else
+			    {
+				    $servers[$matches[1]]['SERVERS'][$matches_server[1]][$matches_server[2]] = trim($val);
+			    }
+	        }
+	        else
+	        {
+		        $servers[$matches[1]][$matches[2]] = trim($val);
+	        }
+	    }
+	}
+	
+	return $servers;
+}
+
+function get_mask_bits($if)
+{
+	$long = ip2long($if['MASK']);
+	$base = ip2long('255.255.255.255');
+	
+	return 32-log(($long ^ $base)+1,2);
+}
+
+function get_iface_network($if)
+{
+	if( ! $if['NETWORK'])
+	{
+		return substr($if['IP'], 0, strrpos($if['IP'], '.')).'.0';
+	}
+	
+	return $if['NETWORK'];
+}
+
 function get_filter_rules()
 {
 	$interfaces = get_context_interfaces();
@@ -84,8 +131,62 @@ function get_nat_rules()
 	{
 		if(isset($interface['VROUTER_GATEWAY']) && $interface['VROUTER_GATEWAY'] == 'YES')
 		{
-			$rules .= '-A POSTROUTING -o '.$interface['DEV'].' -j MASQUERADE'."\n";
+			foreach($interfaces as $source)
+			{
+				if($interface['DEV'] == $source['DEV']) continue;
+				
+				$rules .= '-A POSTROUTING -o '.$interface['DEV'].' -s '.get_iface_network($source).'/'.get_mask_bits($source).' -j MASQUERADE'."\n";
+			}
 		}	
+	}
+
+	$rules .= 'COMMIT'."\n";
+
+	return $rules;
+}
+
+function get_mangle_rules()
+{
+	$interfaces = get_context_interfaces();
+	$servers    = get_context_virtual_servers();
+	
+	$rules = '*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+';
+
+	foreach($servers as $server)
+	{
+		// just to fw marking for multiport services
+		if($pos = strpos($server['PORT'], ' '))
+		{
+			$mark = substr($server['PORT'], 0, $pos);
+			$ip   = $interfaces[$server['DEV']]['VROUTER_IP'].'/'.get_mask_bits($interfaces[$server['DEV']]);
+			
+			// check if not contains ranges
+			if(strpos($server['PORT'], ':') === false)
+			{
+				$rules .= '-A PREROUTING -p tcp -d '.$ip.' -m multiport --dports '.str_replace(' ', ',', $server['PORT']).' -j MARK --set-mark '.$mark."\n";
+				continue;
+			}
+			
+			$ports = explode(' ', $server['PORT']);
+				
+			foreach($ports as $port)
+			{
+				if(strpos($port, ':'))
+				{
+					$rules .= '-A PREROUTING -p tcp -d '.$ip.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
+				}
+				else
+				{
+					$rules .= '-A PREROUTING -p tcp -d '.$ip.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
+				}
+			}
+		}
 	}
 
 	$rules .= 'COMMIT'."\n";
@@ -106,7 +207,8 @@ if(isset($_SERVER['VROUTER_ID']))
 {
 	$rules = get_filter_rules();
 	$rules .= get_nat_rules();
-	
+	$rules .= get_mangle_rules();
+
 	exec('echo "'.$rules.'" > /etc/iptables/rules-save');
 	exec('echo "'.$rules.'" > /etc/iptables/rules6-save');
 	
