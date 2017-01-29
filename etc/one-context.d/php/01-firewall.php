@@ -86,7 +86,9 @@ function get_filter_rules()
 {
 	$interfaces = get_context_interfaces();
 	
-	$rules = '*filter
+	$rules = array();
+	
+	$rules[4] = '*filter
 :INPUT ACCEPT [0:0]
 :FORWARD DROP [0:0]
 :OUTPUT ACCEPT [0:0]
@@ -98,20 +100,23 @@ function get_filter_rules()
 		{
 			if($interface['DEV'] == $destination['DEV']) continue;
 			
-			$rules .= '-A FORWARD -i '.$interface['DEV'].' -o '.$destination['DEV'].' -j ACCEPT'."\n";
+			$rules[4] .= '-A FORWARD -i '.$interface['DEV'].' -o '.$destination['DEV'].' -j ACCEPT'."\n";
 		}
 		
 		// close non management interfaces
 		if($interface['VROUTER_MANAGEMENT'] != 'YES')
 		{
-			$rules .= '-A INPUT -i '.$interface['DEV'].' -p tcp --dport 443 -j DROP'."\n";
-			$rules .= '-A OUTPUT -o '.$interface['DEV'].' -p tcp --sport 443 -j DROP'."\n";
-			$rules .= '-A INPUT -i '.$interface['DEV'].' -p tcp --dport 22 -j DROP'."\n";
-			$rules .= '-A OUTPUT -o '.$interface['DEV'].' -p tcp --sport 22 -j DROP'."\n";
+			$rules[4] .= '-A INPUT -i '.$interface['DEV'].' -p tcp --dport 443 -j DROP'."\n";
+			$rules[4] .= '-A OUTPUT -o '.$interface['DEV'].' -p tcp --sport 443 -j DROP'."\n";
+			$rules[4] .= '-A INPUT -i '.$interface['DEV'].' -p tcp --dport 22 -j DROP'."\n";
+			$rules[4] .= '-A OUTPUT -o '.$interface['DEV'].' -p tcp --sport 22 -j DROP'."\n";
 		}
 	}
 
-	$rules .= 'COMMIT'."\n";
+	$rules[4] .= 'COMMIT'."\n";
+	
+	// IPv6 are same as IPv4
+	$rules[6] = $rules[4];
 	
 	return $rules;
 }
@@ -120,7 +125,9 @@ function get_nat_rules()
 {
 	$interfaces = get_context_interfaces();
 	
-	$rules = '*nat
+	$rules = array();
+	
+	$rules[4] = '*nat
 :PREROUTING ACCEPT [0:0]
 :INPUT ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
@@ -135,12 +142,15 @@ function get_nat_rules()
 			{
 				if($interface['DEV'] == $source['DEV']) continue;
 				
-				$rules .= '-A POSTROUTING -o '.$interface['DEV'].' -s '.get_iface_network($source).'/'.get_mask_bits($source).' -j MASQUERADE'."\n";
+				$rules[4] .= '-A POSTROUTING -o '.$interface['DEV'].' -s '.get_iface_network($source).'/'.get_mask_bits($source).' -j MASQUERADE'."\n";
 			}
 		}	
 	}
 
-	$rules .= 'COMMIT'."\n";
+	$rules[4] .= 'COMMIT'."\n";
+
+	// There are no IPv6 Rules
+	$rules[6] = '';
 
 	return $rules;
 }
@@ -150,7 +160,9 @@ function get_mangle_rules()
 	$interfaces = get_context_interfaces();
 	$servers    = get_context_virtual_servers();
 	
-	$rules = '*mangle
+	$rules = array();
+	
+	$rules[4] = $rules[6] = '*mangle
 :PREROUTING ACCEPT [0:0]
 :INPUT ACCEPT [0:0]
 :FORWARD ACCEPT [0:0]
@@ -164,12 +176,14 @@ function get_mangle_rules()
 		if($pos = strpos($server['PORT'], ' '))
 		{
 			$mark = substr($server['PORT'], 0, $pos);
-			$ip   = $interfaces[$server['DEV']]['VROUTER_IP'].'/'.get_mask_bits($interfaces[$server['DEV']]);
+			$ip4  = $interfaces[$server['DEV']]['VROUTER_IP'].'/'.get_mask_bits($interfaces[$server['DEV']]);
+			$ip6  = ( ! empty($interfaces[$server['DEV']]['VROUTER_IP6'])) ? $interfaces[$server['DEV']]['VROUTER_IP6'].'/64' : false;
 			
 			// check if not contains ranges
 			if(strpos($server['PORT'], ':') === false)
 			{
-				$rules .= '-A PREROUTING -p tcp -d '.$ip.' -m multiport --dports '.str_replace(' ', ',', $server['PORT']).' -j MARK --set-mark '.$mark."\n";
+				$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' -m multiport --dports '.str_replace(' ', ',', $server['PORT']).' -j MARK --set-mark '.$mark."\n";
+				if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' -m multiport --dports '.str_replace(' ', ',', $server['PORT']).' -j MARK --set-mark '.$mark."\n";
 				continue;
 			}
 			
@@ -179,17 +193,20 @@ function get_mangle_rules()
 			{
 				if(strpos($port, ':'))
 				{
-					$rules .= '-A PREROUTING -p tcp -d '.$ip.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
+					$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
+					if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
 				}
 				else
 				{
-					$rules .= '-A PREROUTING -p tcp -d '.$ip.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
+					$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
+					if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
 				}
 			}
 		}
 	}
 
-	$rules .= 'COMMIT'."\n";
+	$rules[4] .= 'COMMIT'."\n";
+	$rules[6] .= 'COMMIT'."\n";
 
 	return $rules;
 }
@@ -205,12 +222,15 @@ $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 // generate only if is VROUTER instance
 if(isset($_SERVER['VROUTER_ID']))
 {
-	$rules = get_filter_rules();
-	$rules .= get_nat_rules();
-	$rules .= get_mangle_rules();
+	$filter_rules = get_filter_rules();
+	$nat_rules    = get_nat_rules();
+	$mangle_rules = get_mangle_rules();
+	
+	$ip4_rules = $filter_rules[4].$nat_rules[4].$mangle_rules[4];
+	$ip6_rules = $filter_rules[6].$nat_rules[6].$mangle_rules[6];
 
-	exec('echo "'.$rules.'" > /etc/iptables/rules-save');
-	exec('echo "'.$rules.'" > /etc/iptables/rules6-save');
+	exec('echo "'.$ip4_rules.'" > /etc/iptables/rules-save');
+	exec('echo "'.$ip6_rules.'" > /etc/iptables/rules6-save');
 	
 	if($action == 'reload') service_reload();
 }
