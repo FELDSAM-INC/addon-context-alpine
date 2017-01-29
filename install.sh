@@ -5,6 +5,7 @@ vrouter_addons()
 {
   apk add ipvsadm
   rc-update add ipvsadm boot
+  mkdir /var/lib/ipvsadm
   touch /var/lib/ipvsadm/rules-save
   
   apk add keepalived
