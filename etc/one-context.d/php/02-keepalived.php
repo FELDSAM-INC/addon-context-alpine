@@ -123,7 +123,7 @@ function  generate_globals()
 	
 	$conf .= '  smtp_server 127.0.0.1
   smtp_connect_timeout 30
-  router_id '.$_SERVER['VROUTER_ID'].'
+  router_id Vrouter_'.$_SERVER['VROUTER_ID'].'_'.$_SERVER['ETH0_IP'].'
 }
 ';
 	
@@ -315,7 +315,7 @@ function service_reload()
 $action = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : 'none';
 
 // generate only if is VROUTER instance
-if(isset($_SERVER['VROUTER_ID']))
+if( ! empty($_SERVER['VROUTER_ID']))
 {
 	$conf = generate_globals();
 	$conf .= generate_groups();
