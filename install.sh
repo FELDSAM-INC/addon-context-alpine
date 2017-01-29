@@ -9,7 +9,7 @@ vrouter_addons()
   # ipvsadm need for load ballancing
   apk add ipvsadm
   rc-update add ipvsadm boot
-  sed -i 's/#!/sbin/runscript/#!/sbin/openrc-run/' /etc/init.d/ipvsadm
+  sed -i 's/#!\/sbin\/runscript/#!\/sbin\/openrc-run/' /etc/init.d/ipvsadm
   if [ ! -d /var/lib/ipvsadm ]; then
     mkdir /var/lib/ipvsadm
   fi
