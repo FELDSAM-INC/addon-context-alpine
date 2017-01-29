@@ -208,7 +208,12 @@ function get_server_name($server)
 {
 	if($pos = strpos($server['PORT'], ' '))
 	{
-		return 'fwmark '.substr($server['PORT'], 0, $pos);
+		$first_port = substr($server['PORT'], 0, $pos);
+		
+		// looks like as FTP service
+		if($first_port == '21') exec('modprobe ip_vs_ftp');
+		
+		return 'fwmark '.$first_port;
 	}
 	
 	$interfaces = get_context_interfaces();
