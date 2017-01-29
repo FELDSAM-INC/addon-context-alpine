@@ -3,8 +3,13 @@
 
 vrouter_addons()
 {
+  apk add ipvsadm
+  rc-update add ipvsadm boot
+  touch /var/lib/ipvsadm/rules-save
+  
   apk add keepalived
   rc-update add keepalived boot
+  
   apk add postfix
   rc-update add postfix boot
   sed -i 's/#inet_interfaces = all/inet_interfaces = localhost/' /etc/postfix/main.cf
