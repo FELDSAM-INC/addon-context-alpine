@@ -176,8 +176,8 @@ function get_mangle_rules()
 		if($pos = strpos($server['PORT'], ' '))
 		{
 			$mark = substr($server['PORT'], 0, $pos);
-			$ip4  = $interfaces[$server['DEV']]['VROUTER_IP'].'/'.get_mask_bits($interfaces[$server['DEV']]);
-			$ip6  = ( ! empty($interfaces[$server['DEV']]['VROUTER_IP6'])) ? $interfaces[$server['DEV']]['VROUTER_IP6'].'/64' : false;
+			$ip4  = $interfaces[$server['DEV']]['VROUTER_IP'].'/32';
+			$ip6  = ( ! empty($interfaces[$server['DEV']]['VROUTER_IP6'])) ? $interfaces[$server['DEV']]['VROUTER_IP6'].'/128' : false;
 			
 			// check if not contains ranges
 			if(strpos($server['PORT'], ':') === false)
