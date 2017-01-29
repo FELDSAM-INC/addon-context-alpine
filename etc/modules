@@ -1,4 +1,6 @@
+af_packet
 ip_tables
 iptable_filter
 ip6_tables
 ip6table_filter
+ip_vs_ftp
