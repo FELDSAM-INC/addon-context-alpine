@@ -3,14 +3,21 @@
 
 vrouter_addons()
 {
+  # ipvsadm requires bash
+  apk add bash
+  
+  # ipvsadm need for load ballancing
   apk add ipvsadm
   rc-update add ipvsadm boot
-  mkdir /var/lib/ipvsadm
+  if [ ! -d /var/lib/ipvsadm ]; then
+    mkdir /var/lib/ipvsadm
+  fi
   touch /var/lib/ipvsadm/rules-save
   
   apk add keepalived
   rc-update add keepalived boot
   
+  # postfix need for sending smtp allerts from keepalived
   apk add postfix
   rc-update add postfix boot
   sed -i 's/#inet_interfaces = all/inet_interfaces = localhost/' /etc/postfix/main.cf
