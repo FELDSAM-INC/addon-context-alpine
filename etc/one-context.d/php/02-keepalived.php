@@ -274,7 +274,8 @@ function generate_virtual_servers()
 					if(empty($check['PORT']) && $type == 'SSL_GET') $conf .= '      connect_port 443'."\n";
 					
 					// connect timeout
-					if( ! empty($check['TIMEOUT'])) $conf .= '      connect_timeout '.$check['TIMEOUT']."\n";
+					$timeout = ( ! empty($check['TIMEOUT'])) ? $check['TIMEOUT'] : 10;
+					$conf .= '      connect_timeout '.$timeout."\n";
 					
 					
 					// *_GET types
