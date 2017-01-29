@@ -191,16 +191,8 @@ function get_mangle_rules()
 				
 			foreach($ports as $port)
 			{
-				if(strpos($port, ':'))
-				{
-					$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
-					if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' -m multiport --dports '.$port.' -j MARK --set-mark '.$mark."\n";
-				}
-				else
-				{
-					$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
-					if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
-				}
+				$rules[4] .= '-A PREROUTING -p tcp -d '.$ip4.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
+				if($ip6) $rules[6] .= '-A PREROUTING -p tcp -d '.$ip6.' --dport '.$port.' -j MARK --set-mark '.$mark."\n";
 			}
 		}
 	}
