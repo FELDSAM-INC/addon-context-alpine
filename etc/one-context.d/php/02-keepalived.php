@@ -269,16 +269,16 @@ function generate_virtual_servers()
 					// connect port
 					if( ! empty($check['PORT'])) $conf .= '      connect_port '.$check['PORT']."\n";
 					// Default HTTP port
-					if(empty($check['PORT']) && $check['TYPE'] == 'HTTP_GET') $conf .= '      connect_port 80'."\n";
+					if(empty($check['PORT']) && $type == 'HTTP_GET') $conf .= '      connect_port 80'."\n";
 					// Default SSL port
-					if(empty($check['PORT']) && $check['TYPE'] == 'SSL_GET') $conf .= '      connect_port 443'."\n";
+					if(empty($check['PORT']) && $type == 'SSL_GET') $conf .= '      connect_port 443'."\n";
 					
 					// connect timeout
 					if( ! empty($check['TIMEOUT'])) $conf .= '      connect_timeout '.$check['TIMEOUT']."\n";
 					
 					
 					// *_GET types
-					if($check['TYPE'] == 'HTTP_GET' || $check['TYPE'] == 'SSL_GET')
+					if($type == 'HTTP_GET' || $type == 'SSL_GET')
 					{
 						$conf .= '      url {
         path /
