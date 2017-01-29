@@ -75,6 +75,10 @@ cleanup()
 
 main()
 {
+  # enable edge repo - need for keepalived
+  sed -i 's/#http:\/\/repository.fit.cvut.cz\/mirrors\/alpine\/edge\/main/http:\/\/repository.fit.cvut.cz\/mirrors\/alpine\/edge\/main/' /etc/apk/repositories
+  sed -i 's/#http:\/\/repository.fit.cvut.cz\/mirrors\/alpine\/edge\/community/http:\/\/repository.fit.cvut.cz\/mirrors\/alpine\/edge\/community/' /etc/apk/repositories
+	
   # start, just fetch fresh info
   apk update
   
