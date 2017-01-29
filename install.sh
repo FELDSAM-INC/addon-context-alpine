@@ -17,6 +17,7 @@ vrouter_addons()
   
   apk add keepalived
   rc-update add keepalived boot
+  sed -i 's/use net/need sshd/' /etc/init.d/keepalived
   
   # postfix need for sending smtp allerts from keepalived
   apk add postfix
